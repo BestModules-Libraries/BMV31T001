@@ -1,14 +1,13 @@
 /*********************************************************************************************
 File:       	  BMV31T001.cpp
-Author:           YANG, BESTMODULE
-Description:      single wire communicates with BMV31T001 and controls audio playback
-Version:          V1.0.1    -- 2024-02-22
+Author:         BEST MODULES CORP.
+Description:    single wire communicates with BMV31T001 and controls audio playback
+Version:        V1.0.2   -- 2024-11-15
 
 **********************************************************************************************/
 
 #include "BMV31T001.h"
 #include "SPI.h"
-
 
 #define KEY_UP  	A1
 #define KEY_LEFT  	A2
@@ -70,14 +69,11 @@ static const uint8_t crc_table[] =
 };
 
 
-
 /************************************************************************* 
-Description:    Constructor
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Constructor
+parameter:    None       
+Return:       None  
+Others:       None        
 *************************************************************************/
 BMV31T001::BMV31T001()
 {
@@ -86,13 +82,12 @@ BMV31T001::BMV31T001()
 	_isKey = 0;
 	_flashAddr = 0;
 }
+
 /************************************************************************* 
-Description:    Initialize communication between development board and BMV31T001
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Initialize communication between development board and BMV31T001
+parameter:    void       
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::begin(void)
 {
@@ -116,128 +111,24 @@ void BMV31T001::begin(void)
 }
 
 /************************************************************************* 
-Description:    Sends playback control commands
-parameter:
-    Input:          cmd：playback control commands
-                    data : 0x00~0x7f is select the voice 0~127 to play if cmd is 0xfa
-                           0x00~0x7f is select the voice 128~255 to play if cmd is 0xfb
-    Output:         
-Return:         
-Others:         
-*************************************************************************/
-void BMV31T001::writeCmd(uint8_t cmd, uint8_t data)
-{
-	delayMicroseconds(5000);
-	uint8_t i, temp;
-	temp = 0x01;
-    
-    if(0xff != data)
-    {
-        //start signal
-        digitalWrite(DATA, LOW);
-        delay(5);
-
-        for (i = 0; i < 8; i ++)
-        {
-            if (1 == (cmd & temp))
-            {
-                    // out bit high
-                    digitalWrite(DATA, HIGH);
-                    delayMicroseconds(1200);
-                    digitalWrite(DATA, LOW);
-                    delayMicroseconds(400);
-            }
-            else
-            {
-                // out bit low
-                digitalWrite(DATA, HIGH);
-                delayMicroseconds(400);
-                digitalWrite(DATA, LOW);
-                delayMicroseconds(1200);
-            }
-            cmd >>= 1;
-        }
-        digitalWrite(DATA, HIGH);
-        delay(5);
-        //start signal
-        digitalWrite(DATA, LOW);
-        delay(5);
-
-        for (i = 0; i < 8; i ++)
-        {
-            if (1 == (data & temp))
-            {
-                    // out bit high
-                    digitalWrite(DATA, HIGH);
-                    delayMicroseconds(1200);
-                    digitalWrite(DATA, LOW);
-                    delayMicroseconds(400);
-            }
-            else
-            {
-                // out bit low
-                digitalWrite(DATA, HIGH);
-                delayMicroseconds(400);
-                digitalWrite(DATA, LOW);
-                delayMicroseconds(1200);
-            }
-            data >>= 1;
-        }
-        digitalWrite(DATA, HIGH);
-        delay(5);
-    }
-    else
-    {
-        //start signal
-        digitalWrite(DATA, LOW);
-        delay(5);
-
-        for (i = 0; i < 8; i ++)
-        {
-            if (1 == (cmd & temp))
-            {
-                    // out bit high
-                    digitalWrite(DATA, HIGH);
-                    delayMicroseconds(1200);
-                    digitalWrite(DATA, LOW);
-                    delayMicroseconds(400);
-            }
-            else
-            {
-                // out bit low
-                digitalWrite(DATA, HIGH);
-                delayMicroseconds(400);
-                digitalWrite(DATA, LOW);
-                delayMicroseconds(1200);
-            }
-            cmd >>= 1;
-        }
-        digitalWrite(DATA, HIGH);
-        delay(5);        
-    }
-
-}
-/************************************************************************* 
-Description:    Set the volume
-parameter:
-    Input:          volume：0~11(0:minimum volume（mute）;11:maximum volume)
-    Output:         
-Return:         
-Others:         
+Description:  Set the volume
+parameter:    volume：0~11(0:minimum volume（mute）;11:maximum volume)       
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::setVolume(uint8_t volume)
 {
 	writeCmd(0xe1 + volume);
 }
+
 /************************************************************************* 
-Description:    Play voice.
+Description:  Play voice
 parameter:
-    Input:			num：VOC_01~VOC_256(Enter the number according to the number of the voice 
+      			  num：VOC_01~VOC_256(Enter the number according to the number of the voice 
                     generated by the PC tool.The maximum number is VOC_256. )
-                    loop：default 0.(1：Loops the current voice，0：Play it only once) 
-    Output:         
-Return:         
-Others:         
+              loop：default 0.(1：Loops the current voice，0：Play it only once)         
+Return:       void 
+Others:       None         
 *************************************************************************/
 void BMV31T001::playVoice(uint8_t num, uint8_t loop)
 {
@@ -255,15 +146,15 @@ void BMV31T001::playVoice(uint8_t num, uint8_t loop)
 		writeCmd(0xf4);
 	}
 }
+
 /************************************************************************* 
-Description:    Play sentence.
+Description:  Play sentence.
 parameter:
-    Input:			num：SEN_01~SEN_96(Enter the number according to the number of the sentence 
+          		num：SEN_01~SEN_96(Enter the number according to the number of the sentence 
                     generated by the PC tool.The maximum number is SEN_96. )
-                    loop：default 0.(1：Loops the current sentence，0：Play it only once)          
-    Output:         
-Return:         
-Others:         
+              loop：default 0.(1：Loops the current sentence，0：Play it only once)                  
+Return:       void 
+Others:       None         
 *************************************************************************/
 void BMV31T001::playSentence(uint8_t num, uint8_t loop)
 {
@@ -273,62 +164,58 @@ void BMV31T001::playSentence(uint8_t num, uint8_t loop)
 		writeCmd(0xf4);
 	}
 }
+
 /************************************************************************* 
-Description:    Stop playing the current voice and sentence.
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Stop playing the current voice and sentence.
+parameter:    void         
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::playStop(void)
 {
 	writeCmd(STOP_PLAY);
 }
+
 /************************************************************************* 
-Description:    Pause playing the current voice and sentence.
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Pause playing the current voice and sentence.
+parameter:    void         
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::playPause(void)
 {
 	writeCmd(PAUSE_PLAY);
 }
+
 /************************************************************************* 
-Description:    Continue playing the paused voice and sentence.
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Continue playing the paused voice and sentence.
+parameter:    void         
+Return:       void 
+Others:       None         
 *************************************************************************/
 void BMV31T001::playContinue(void)
 {
 	writeCmd(CONTINUE_PLAY);
 }
+
 /************************************************************************* 
-Description:    Loop playback the current voice/sentence
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Loop playback the current voice/sentence
+parameter:    void         
+Return:       void 
+Others:       None         
 *************************************************************************/
 void BMV31T001::playRepeat(void)
 {
     writeCmd(LOOP_PLAY);
 }
+
 /************************************************************************* 
-Description:    Get the play status
-parameter:
-    Input:          
-    Output:         
-Return:         0:Not in the play
-				1:In the play
-Others:         
+Description:  Get the play status
+parameter:    void         
+Return:       Play state
+               true: In play
+               false: Out of play 
+Others:       None          
 *************************************************************************/
 bool BMV31T001::isPlaying(void)
 {
@@ -343,12 +230,10 @@ bool BMV31T001::isPlaying(void)
 }
 
 /************************************************************************* 
-Description:    Scanning key
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Scanning key
+parameter:    void         
+Return:       void 
+Others:       None        
 *************************************************************************/
 void BMV31T001::scanKey(void)
 {
@@ -399,13 +284,14 @@ void BMV31T001::scanKey(void)
         lastKey = currentKey;
     }
 }
+
 /************************************************************************* 
-Description:    Determine if any keys are pressed
-parameter:
-    Input: 
-    Output:     
-Return:         0: No keys were pressed; 1: there are keys that are pressed
-Others:         
+Description:  Determine if any keys are pressed
+parameter:    void         
+Return:       Key state
+               true: Have a change
+               false: No change
+Others:       None         
 *************************************************************************/
 bool BMV31T001::isKeyAction(void)
 {
@@ -419,50 +305,56 @@ bool BMV31T001::isKeyAction(void)
         return 0;
     }
 }
+
 /************************************************************************* 
-Description:    Read the key level value
-parameter:
-    Input:          
-    Output:         
-Return:         0: pressing; 1: no pressing
-Others:         
+Description:  Read the key level value
+parameter:    void         
+Return:       Key state
+               0x00: No button pressed
+               0x01: The middle key is pressed
+               0x02: The upper key is pressed
+               0x04: The down key is pressed
+               0x08: Left key is pressed
+               0x10: Right-click
+Others:       None        
 *************************************************************************/
 uint8_t BMV31T001::readKeyValue(void)
 {
 	return _keyValue;
 }
+
 /************************************************************************* 
-Description:    Set the power up or down of the BMV31T001
-parameter:
-    Input:          status: 0:power down; 1:power up
-    Output:         
-Return:         
-Others:         
+Description:  Set the power up or down of the BMV31T001
+parameter:    status: On-off state
+                  0x00:power down
+                  0x01:power up       
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::setPower(uint8_t status)
 {
 	digitalWrite(POWER_PIN, status);
 }
+
 /************************************************************************* 
-Description:    Set the onboard LED on or off
-parameter:
-    Input:          status: 0:LED off; 1:LED on
-    Output:         
-Return:         
-Others:         
+Description:  Set the onboard LED on or off
+parameter:    status:LED status
+                0x00:LED off
+                0x01:LED on        
+Return:       void 
+Others:       None          
 *************************************************************************/
 void BMV31T001::setLED(uint8_t status)
 {
 	digitalWrite(LED_PIN, !status);
 }
+
 /************************************************************************* 
-Description:    Update your audio source with Ardunio
-parameter:
-    Input:          boardType: 0: BMduino UNO; 1: Arduino UNO
-                    baudrate：Updated baud rate
-    Output:         
-Return:         
-Others:         
+Description:  Update your audio source with Ardunio
+parameter:    boardType: 0: BMduino UNO; 1: Arduino UNO
+              baudrate：Updated baud rate        
+Return:       void 
+Others:       None         
 *************************************************************************/
 #if defined(__AVR_ATmega328P__)
 void BMV31T001::initAudioUpdate(unsigned long baudrate)
@@ -480,12 +372,12 @@ void BMV31T001::initAudioUpdate(unsigned long baudrate)
 }
 #endif
 /************************************************************************* 
-Description:    Get the update sound source signal
-parameter:
-    Input:         		
-    Output:         
-Return:         1：execute update; 0：not execute update
-Others:         
+Description:  Get the update sound source signal
+parameter:    void        
+Return:       Whether any audio sources need to be updated
+                0x01：execute update 
+                0x00：not execute update
+Others:       None         
 *************************************************************************/
 #if defined(__AVR_ATmega328P__)
 bool BMV31T001::isUpdateBegin(void)
@@ -514,12 +406,12 @@ bool BMV31T001::isUpdateBegin(void)
 #endif
 
 /************************************************************************* 
-Description:    Update the audio source
-parameter:
-    Input:         		
-    Output:         
-Return:         1:Update completed; 0:Update failed 
-Others:         
+Description:  Update the audio source
+parameter:    void        
+Return:       Update of the sound source
+               true: Update complete
+               false: Update failure
+Others:       None         
 *************************************************************************/
 #if defined(__AVR_ATmega328P__)
 bool BMV31T001::executeUpdate(void)
@@ -707,13 +599,114 @@ bool BMV31T001::executeUpdate(void)
     }
 }
 #endif
+
 /************************************************************************* 
-Description:    Receive audio data update from upper computer into BMV31T001
+Description:  Sends playback control commands
 parameter:
-    Input:          
-    Output:         
-Return:         1:Correct reception; 0:Error of reception
-Others:         
+              cmd：playback control commands
+              data : 0x00~0x7f is select the voice 0~127 to play if cmd is 0xfa
+                     0x00~0x7f is select the voice 128~255 to play if cmd is 0xfb        
+Return:       void 
+Others:       None        
+*************************************************************************/
+void BMV31T001::writeCmd(uint8_t cmd, uint8_t data)
+{
+	delayMicroseconds(5000);
+	uint8_t i, temp;
+	temp = 0x01;
+    
+    if(0xff != data)
+    {
+        //start signal
+        digitalWrite(DATA, LOW);
+        delay(5);
+
+        for (i = 0; i < 8; i ++)
+        {
+            if (1 == (cmd & temp))
+            {
+                    // out bit high
+                    digitalWrite(DATA, HIGH);
+                    delayMicroseconds(1200);
+                    digitalWrite(DATA, LOW);
+                    delayMicroseconds(400);
+            }
+            else
+            {
+                // out bit low
+                digitalWrite(DATA, HIGH);
+                delayMicroseconds(400);
+                digitalWrite(DATA, LOW);
+                delayMicroseconds(1200);
+            }
+            cmd >>= 1;
+        }
+        digitalWrite(DATA, HIGH);
+        delay(5);
+        //start signal
+        digitalWrite(DATA, LOW);
+        delay(5);
+
+        for (i = 0; i < 8; i ++)
+        {
+            if (1 == (data & temp))
+            {
+                    // out bit high
+                    digitalWrite(DATA, HIGH);
+                    delayMicroseconds(1200);
+                    digitalWrite(DATA, LOW);
+                    delayMicroseconds(400);
+            }
+            else
+            {
+                // out bit low
+                digitalWrite(DATA, HIGH);
+                delayMicroseconds(400);
+                digitalWrite(DATA, LOW);
+                delayMicroseconds(1200);
+            }
+            data >>= 1;
+        }
+        digitalWrite(DATA, HIGH);
+        delay(5);
+    }
+    else
+    {
+        //start signal
+        digitalWrite(DATA, LOW);
+        delay(5);
+
+        for (i = 0; i < 8; i ++)
+        {
+            if (1 == (cmd & temp))
+            {
+                    // out bit high
+                    digitalWrite(DATA, HIGH);
+                    delayMicroseconds(1200);
+                    digitalWrite(DATA, LOW);
+                    delayMicroseconds(400);
+            }
+            else
+            {
+                // out bit low
+                digitalWrite(DATA, HIGH);
+                delayMicroseconds(400);
+                digitalWrite(DATA, LOW);
+                delayMicroseconds(1200);
+            }
+            cmd >>= 1;
+        }
+        digitalWrite(DATA, HIGH);
+        delay(5);        
+    }
+
+}
+
+/************************************************************************* 
+Description:  Receive audio data update from upper computer into BMV31T001
+parameter:    void    
+Return:       void 
+Others:       None         
 *************************************************************************/
 #if defined(__AVR_ATmega328P__)
 void BMV31T001::recAudioData(void)
@@ -788,13 +781,10 @@ void BMV31T001::recAudioData(void)
 #endif
 
 /************************************************************************* 
-Description:    Enter update mode
-parameter:
-    Input:          
-    Output:         
-Return:         1:Enter mode successfully
-                0:Failed to enter mode
-Others:         
+Description:  Enter update mode
+parameter:    mode   
+Return:       void 
+Others:       None           
 *************************************************************************/
 bool BMV31T001::programEntry(uint16_t mode)
 {
@@ -849,12 +839,10 @@ bool BMV31T001::programEntry(uint16_t mode)
     return true;
 }
 /************************************************************************* 
-Description:    ack of mode
-parameter:
-    Input:          
-    Output:         
-Return:         mode data
-Others:         
+Description:  ack of mode
+parameter:    void   
+Return:       ackData 
+Others:       None         
 *************************************************************************/
 uint16_t BMV31T001::ack(void)
 {
@@ -883,12 +871,10 @@ uint16_t BMV31T001::ack(void)
     return ackData;
 }
 /************************************************************************* 
-Description:    Send the dummy Clocks
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Send the dummy Clocks
+parameter:    void   
+Return:       void
+Others:       None          
 *************************************************************************/
 void BMV31T001::dummyClocks(void)
 {
@@ -902,12 +888,10 @@ void BMV31T001::dummyClocks(void)
     }
 }
 /************************************************************************* 
-Description:    Send data bit in high
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Send data bit in high
+parameter:    void   
+Return:       void
+Others:       None          
 *************************************************************************/
 void BMV31T001::programDataOut1(void)
 {
@@ -919,12 +903,10 @@ void BMV31T001::programDataOut1(void)
 
 }
 /************************************************************************* 
-Description:    Send data bit in low
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Send data bit in low
+parameter:    void   
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::programDataOut0(void)
 {
@@ -935,12 +917,10 @@ void BMV31T001::programDataOut0(void)
     digitalWrite(ICPCK, HIGH);
 }
 /************************************************************************* 
-Description:    Send address bit in high
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Send address bit in high
+parameter:    void   
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::programAddrOut1(void)
 {
@@ -952,12 +932,10 @@ void BMV31T001::programAddrOut1(void)
     delayMicroseconds(4);//tckh:1~15us
 }
 /************************************************************************* 
-Description:    Send address bit in low
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Send address bit in low
+parameter:    void   
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::programAddrOut0(void)
 {
@@ -968,12 +946,10 @@ void BMV31T001::programAddrOut0(void)
     delayMicroseconds(4);//tckh:1~15us
 }
 /************************************************************************* 
-Description:    Pattern(mode) matching
-parameter:
-    Input:          mode:0x02
-    Output:         
-Return:         
-Others:         
+Description:  Pattern(mode) matching
+parameter:    mode  
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::matchPattern(uint16_t mode)
 {
@@ -995,12 +971,10 @@ void BMV31T001::matchPattern(uint16_t mode)
     digitalWrite(ICPDA, HIGH);
 }
 /************************************************************************* 
-Description:    Send the address
-parameter:
-    Input:          addr:The address to which data is written
-    Output:         
-Return:         
-Others:         
+Description:  Send the address
+parameter:    addr:The address to which data is written        
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::sendAddr(uint16_t addr)
 {
@@ -1022,12 +996,10 @@ void BMV31T001::sendAddr(uint16_t addr)
 	}
 }
 /************************************************************************* 
-Description:    Send the data
-parameter:
-    Input:          data:Data sent to the BMV31T001 at a fixed address
-    Output:         
-Return:         
-Others:         
+Description:  Send the data
+parameter:    data:Data sent to the BMV31T001 at a fixed address    
+Return:       void
+Others:       None          
 *************************************************************************/
 void BMV31T001::sendData(uint16_t data)
 {
@@ -1055,12 +1027,10 @@ void BMV31T001::sendData(uint16_t data)
     delayMicroseconds(5);
 }
 /************************************************************************* 
-Description:    Send the data
-parameter:
-    Input:          data:Data read from the BMV31T001 at a fixed address
-    Output:         
-Return:         
-Others:         
+Description:  Send the data
+parameter:    void
+Return:       rxData
+Others:       None          
 *************************************************************************/
 uint16_t BMV31T001::readData(void)
 {
@@ -1095,13 +1065,11 @@ uint16_t BMV31T001::readData(void)
     return rxData;
 }
 /************************************************************************* 
-Description:    Switch SPI Mode
-parameter:
-    Input:          
-    Output:         
-Return:         1:Switch successfully
-                1:Fail to switch
-Others:         
+Description:  Switch SPI Mode
+parameter:    void 
+Return:       true:Switch successfully
+              false:Fail to switch
+Others:       None        
 *************************************************************************/
 bool BMV31T001::switchSPIMode(void)
 {
@@ -1143,14 +1111,11 @@ bool BMV31T001::switchSPIMode(void)
     return true;
 }
 /************************************************************************* 
-Description:    Data check
-parameter:
-    Input:          *ptr:The array to check
-                    len:Length of data to be check
-    Output:         
-Return:         1:correct
-                0:error
-Others:         
+Description: Data check
+parameter:   *ptr:The array to check
+             len:Length of data to be check     
+Return:      crc
+Others:      None         
 *************************************************************************/
 uint8_t BMV31T001::checkCRC8(uint8_t *ptr, uint8_t len) 
 {
@@ -1163,12 +1128,10 @@ uint8_t BMV31T001::checkCRC8(uint8_t *ptr, uint8_t len)
     return (crc);
 }
 /************************************************************************* 
-Description:    Enables the write access to the FLASH.
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Enables the write access to the FLASH.
+parameter:    void 
+Return:       void
+Others:       None          
 *************************************************************************/
 void BMV31T001::SPIFlashWriteEnable(void)
 {
@@ -1182,13 +1145,11 @@ void BMV31T001::SPIFlashWriteEnable(void)
       digitalWrite(SEL, HIGH);
 }
 /************************************************************************* 
-Description:    Polls the status of the Write In Progress (WIP) flag in 
-                the FLASH's status register and loop until write  opertaion has completed.
-parameter:                
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Polls the status of the Write In Progress (WIP) flag in 
+              the FLASH's status register and loop until write  opertaion has completed.
+parameter:    void 
+Return:       void
+Others:       None          
 *************************************************************************/
 void BMV31T001::SPIFlashWaitForWriteEnd(void)
 {
@@ -1211,12 +1172,10 @@ void BMV31T001::SPIFlashWaitForWriteEnd(void)
     digitalWrite(SEL, HIGH);	
 }
 /************************************************************************* 
-Description:    Erases the entire FLASH.
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Erases the entire FLASH.
+parameter:    void 
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::SPIFlashChipErase(void)
 {
@@ -1238,13 +1197,11 @@ void BMV31T001::SPIFlashChipErase(void)
 Description:    Writes more than one byte to the FLASH with a single WRITE cycle(Page WRITE sequence). 
                 The number of byte can't exceed the FLASH page size.
 parameter:
-    Input:          pBuffer : pointer to the buffer  containing the data to be written to the FLASH.
-                    writeAddr : FLASH's internal address to write to.
-                    numByteToWrite : number of bytes to write to the FLASH, must be equal or less 
-                                    than "SPI_FLASH_PAGESIZE" value.
-    Output:         
-Return:         
-Others:         
+              pBuffer : pointer to the buffer  containing the data to be written to the FLASH.
+              writeAddr : FLASH's internal address to write to.
+              numByteToWrite : number of bytes to write to the FLASH, must be equal or less than "SPI_FLASH_PAGESIZE" value.
+Return:       void
+Others:       None           
 *************************************************************************/
 void BMV31T001::SPIFlashPageWrite(uint8_t* pBuffer, uint32_t writeAddr, uint16_t numByteToWrite)
 {
@@ -1277,14 +1234,13 @@ void BMV31T001::SPIFlashPageWrite(uint8_t* pBuffer, uint32_t writeAddr, uint16_t
   SPIFlashWaitForWriteEnd();
 }
 /************************************************************************* 
-Description:    Read SFDP.
+Description:  Read SFDP.
 parameter:
-    Input:          pBuffer : pointer to the buffer that receives the data read from the FLASH.
-                    ReadAddr : FLASH's internal address to read from.
-                    NumByteToRead : number of bytes to read from the FLASH.
-    Output:         
-Return:         
-Others:         
+              pBuffer : pointer to the buffer that receives the data read from the FLASH.
+              ReadAddr : FLASH's internal address to read from.
+              NumByteToRead : number of bytes to read from the FLASH.     
+Return:       void
+Others:       None         
 *************************************************************************/
 void BMV31T001::SPIFlashReadSFDP(uint8_t* pBuffer, uint32_t ReadAddr, uint16_t NumByteToRead)
 {
@@ -1318,12 +1274,10 @@ void BMV31T001::SPIFlashReadSFDP(uint8_t* pBuffer, uint32_t ReadAddr, uint16_t N
 }
 
 /************************************************************************* 
-Description:    Reset BMV31T001
-parameter:
-    Input:          
-    Output:         
-Return:         
-Others:         
+Description:  Reset BMV31T001
+parameter:    void         
+Return:       void
+Others:       None        
 *************************************************************************/
 void BMV31T001::reset(void)
 {

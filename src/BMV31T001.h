@@ -1,9 +1,8 @@
 /*************************************************************************
 File:       	  BMV31T001.h
-Author:           YANG, BESTMODULE
-Description:      Define classes and required variables
-Version:          V1.0.1    -- 2024-02-22
-
+Author:         BEST MODULES CORP.
+Description:    Define classes and required variables
+Version:        V1.0.2    -- 2024-11-15
 **************************************************************************/
 #ifndef _BMV31T001_H
 #define _BMV31T001_H
